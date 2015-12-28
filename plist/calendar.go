@@ -1,6 +1,7 @@
 package plist
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -17,11 +18,11 @@ type CalendarProperties struct {
 
 // Generate returns contents for a reminder plist file with the data
 // given in this CalendarProperties struct
-func (f *CalendarProperties) Generate() ([]byte, error) {
+func (f *CalendarProperties) Generate(tempType string) ([]byte, error) {
 	if f.BinPath == "" {
 		path, _ := filepath.Abs(os.Args[0])
 		f.BinPath = path
 	}
 
-	return createFromTemplate("templates/reminder.plist", *f)
+	return createFromTemplate(fmt.Sprintf("templates/%s.plist", tempType), *f)
 }
