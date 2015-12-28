@@ -5,6 +5,7 @@ import (
 
 	"github.com/chr0n1x/yodelr/launchctl"
 	"github.com/chr0n1x/yodelr/plist"
+	"github.com/chr0n1x/yodelr/time"
 
 	"github.com/codegangsta/cli"
 
@@ -12,16 +13,31 @@ import (
 )
 
 func startReminder(context *cli.Context) {
+	if context.String("every") != "" && context.String("in") != "" {
+		log.Fatal("Can only specify '--every' or '--in', not both")
+	}
+
+	reminderType := "every"
+	reminderVal := "minute"
+	if context.String("every") != "" || context.String("in") != "" {
+		if context.String("in") != "" {
+			reminderType = "in"
+		}
+		reminderVal = context.String(reminderType)
+	}
+
 	note := buildNotification(context.Bool("ping"), context.Args()...)
-	props := plist.CalendarProperties{}
+	props := plist.CalendarProperties{
+		Interval: time.ToInterval(reminderVal),
+	}
 	props.Notification = *note
 
-	template, err := props.Generate()
+	template, err := props.Generate(reminderType)
 	if err != nil {
 		log.Fatalf("Could not generate reminder: %+v", err)
 	}
 
-	filepath := plist.GeneratePath("reminder", &props)
+	filepath := plist.GeneratePath(reminderType, &props)
 
 	log.Infof("Writing %s", filepath)
 	log.Debugf("Contents\n%s", template)
@@ -39,9 +55,23 @@ func startReminder(context *cli.Context) {
 
 // Remind - generate a plist file that invokes the notify command
 var Remind = cli.Command{
-	Name:        "remind",
-	Usage:       "dynamically spin off a reminder",
-	Action:      startReminder,
-	Flags:       defaultFlags(),
+	Name:   "remind",
+	Usage:  "dynamically spin off a reminder",
+	Action: startReminder,
+	Flags: append(
+		defaultFlags(),
+		cli.BoolFlag{
+			Name:  "ping, p",
+			Usage: "notify with a sound",
+		},
+		cli.StringFlag{
+			Name:  "every, e",
+			Usage: "Repeating reminder.",
+		},
+		cli.StringFlag{
+			Name:  "in, i",
+			Usage: "Remind once.",
+		},
+	),
 	Description: "Spin off a reminder.",
 }
