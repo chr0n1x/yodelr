@@ -52,6 +52,7 @@ func setFlags(app *cli.App) {
 func setCommands(app *cli.App) {
 	app.Commands = []cli.Command{
 		commands.Notify,
+		commands.Remind,
 	}
 }
 
