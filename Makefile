@@ -1,11 +1,10 @@
-default: run
+default: compile
 
 install-deps:
 	go get github.com/tools/godep
+	go get -u github.com/jteeuwen/go-bindata/...
 	godep restore
+	go-bindata -pkg templates -o templates/bindata.go templates/...
 
-run: install-deps
-	go run yodelr.go ${ARGS}
-
-install-dev: install-deps
-	go build
+compile: install-deps
+	go build -o ./yodelr
