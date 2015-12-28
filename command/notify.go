@@ -8,19 +8,9 @@ import (
 )
 
 func build(ping bool, args ...string) *construct.Notification {
-	msgArgs := append([]string{}, args...)
-	for len(msgArgs) < 3 {
-		msgArgs = append(msgArgs, "")
-	}
-
-	log.Debugf("[Message Title Subtitle]: %+v", msgArgs)
-
-	return &construct.Notification{
-		Message:  msgArgs[0],
-		Title:    msgArgs[1],
-		Subtitle: msgArgs[2],
-		Ping:     ping,
-	}
+	not := buildNotification(ping, args...)
+	log.Debugf("%+v", not)
+	return not
 }
 
 func pushNotification(context *cli.Context) {
@@ -32,7 +22,7 @@ func pushNotification(context *cli.Context) {
 
 var Notify = cli.Command{
 	Name:   "notify",
-	Usage:  "notify MESSAGE [TITLE] [SUBTITLE]",
+	Usage:  "push a notification, given a message and, optionally, title & subtitle",
 	Action: pushNotification,
 	Flags: []cli.Flag{
 		cli.BoolFlag{
